@@ -58,6 +58,16 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
   const companyRoles = roles.filter((item) => item.role === "company_user");
   const isStudent = Boolean(principal.studentId);
 
+  // Resource identifiers must come from a server-side lookup. Missing scope
+  // is not a wildcard, including for administrative operations.
+  if (
+    (resource.kind === "student" && !resource.studentId) ||
+    (resource.kind === "cycle" && !resource.cycleId) ||
+    (resource.kind === "company" && !resource.companyId)
+  ) {
+    return { allowed: false, reason: "invalid_context" };
+  }
+
   if (resource.kind === "audit") {
     return isAdmin && resource.operation === "read"
       ? { allowed: true, reason: "authorized" }
@@ -78,7 +88,9 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
     if (resource.operation !== "read") {
       return { allowed: false, reason: "archived_record_restricted" };
     }
-    if (isAdmin) return { allowed: true, reason: "authorized" };
+    if (isAdmin && ["student", "cycle", "company"].includes(resource.kind)) {
+    return { allowed: true, reason: "authorized" };
+  }
     if (tutorRoles.length > 0) {
       if (!resource.cycleId || !tutorRoles.some((role) => role.cycleId === resource.cycleId)) {
         return { allowed: false, reason: "scope_mismatch" };
