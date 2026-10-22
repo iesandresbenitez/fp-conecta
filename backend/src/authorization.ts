@@ -1,4 +1,4 @@
-export type AppRole = "admin_fp" | "tutor" | "company_user" | "student";
+export type AppRole = "admin_fp" | "tutor" | "company_user";
 
 export type AccountStatus = "pending" | "active" | "suspended" | "disabled";
 
@@ -56,7 +56,17 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
   const isAdmin = roles.some((item) => item.role === "admin_fp");
   const tutorRoles = roles.filter((item) => item.role === "tutor");
   const companyRoles = roles.filter((item) => item.role === "company_user");
-  const isStudent = roles.some((item) => item.role === "student");
+  const isStudent = Boolean(principal.studentId);
+
+  if (resource.kind === "audit") {
+    return isAdmin && resource.operation === "read"
+      ? { allowed: true, reason: "authorized" }
+      : { allowed: false, reason: "operation_restricted" };
+  }
+
+  if (resource.kind === "student" && resource.operation === "delete") {
+    return { allowed: false, reason: "operation_restricted" };
+  }
 
   if (resource.archived) {
     if (resource.operation !== "read") {
@@ -98,10 +108,6 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
       return { allowed: true, reason: "authorized" };
     }
     return { allowed: false, reason: "scope_mismatch" };
-  }
-
-  if (resource.kind === "audit") {
-    return { allowed: false, reason: "operation_restricted" };
   }
 
   // The policy remains deny-by-default for resource types whose fine-grained
