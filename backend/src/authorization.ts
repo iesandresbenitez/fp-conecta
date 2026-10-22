@@ -64,8 +64,14 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
       : { allowed: false, reason: "operation_restricted" };
   }
 
-  if (resource.kind === "student" && resource.operation === "delete") {
+  if (resource.operation === "delete") {
     return { allowed: false, reason: "operation_restricted" };
+  }
+
+  // These resource classes need dedicated, data-backed policies before use.
+  // Even administrators are denied until those policies are implemented.
+  if (resource.kind === "document" || resource.kind === "assignment") {
+    return { allowed: false, reason: "no_matching_role" };
   }
 
   if (resource.archived) {
