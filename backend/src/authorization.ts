@@ -88,9 +88,9 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
     if (resource.operation !== "read") {
       return { allowed: false, reason: "archived_record_restricted" };
     }
-    if (isAdmin && ["student", "cycle", "company"].includes(resource.kind)) {
-    return { allowed: true, reason: "authorized" };
-  }
+    if (isAdmin) {
+      return { allowed: true, reason: "authorized" };
+    }
     if (tutorRoles.length > 0) {
       if (!resource.cycleId || !tutorRoles.some((role) => role.cycleId === resource.cycleId)) {
         return { allowed: false, reason: "scope_mismatch" };
@@ -103,7 +103,14 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
     return { allowed: false, reason: "archived_record_restricted" };
   }
 
-  if (isAdmin) return { allowed: true, reason: "authorized" };
+  // Export is intentionally denied to all roles until a separate, audited
+  // export policy specifies eligible data, purpose and authorization checks.
+  if (isAdmin) {
+    const adminOperations = ["read", "create", "update", "archive", "admin"];
+    return adminOperations.includes(resource.operation)
+      ? { allowed: true, reason: "authorized" }
+      : { allowed: false, reason: "operation_restricted" };
+  }
 
   if (resource.kind === "student" || resource.studentId) {
     if (isStudent && principal.studentId && principal.studentId === resource.studentId && resource.operation === "read") {
