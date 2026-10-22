@@ -116,9 +116,13 @@ export function authorize(principal: Principal | null, resource: ResourceScope |
     if (isStudent && principal.studentId && principal.studentId === resource.studentId && resource.operation === "read") {
       return { allowed: true, reason: "authorized" };
     }
+    // Tutors may consult student records within their assigned cycle, but
+    // must use a dedicated follow-up resource for edits. The student resource
+    // represents identity/master data and is not writable by tutors.
     if (
+      resource.kind === "student" &&
       tutorRoles.some((role) => Boolean(resource.cycleId) && role.cycleId === resource.cycleId) &&
-      (resource.operation === "read" || resource.operation === "create" || resource.operation === "update")
+      resource.operation === "read"
     ) {
       return { allowed: true, reason: "authorized" };
     }
