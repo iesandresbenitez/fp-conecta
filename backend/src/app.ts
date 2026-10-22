@@ -2,10 +2,10 @@ import Fastify from "fastify";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
 export type ApiConfig = {
-  issuer?: string;
-  audience?: string;
-  jwksUrl?: string;
-  logLevel?: string;
+  issuer?: string | undefined;
+  audience?: string | undefined;
+  jwksUrl?: string | undefined;
+  logLevel?: string | undefined;
 };
 
 type VerifiedIdentity = {
