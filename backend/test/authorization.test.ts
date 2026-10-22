@@ -36,9 +36,13 @@ test("student can read own record but not another student's record", () => {
 
 test("tutor is restricted to assigned cycle", () => {
   const tutor: Principal = { accountId: "tutor-1", status: "active", roles: [{ role: "tutor", cycleId: "cycle-a" }] };
-  assert.equal(authorize(tutor, { kind: "student", studentId: "student-1", cycleId: "cycle-a", operation: "update" }).allowed, true);
+  assert.equal(authorize(tutor, { kind: "student", studentId: "student-1", cycleId: "cycle-a", operation: "read" }).allowed, true);
   assert.deepEqual(
-    authorize(tutor, { kind: "student", studentId: "student-1", cycleId: "cycle-b", operation: "update" }),
+    authorize(tutor, { kind: "student", studentId: "student-1", cycleId: "cycle-b", operation: "read" }),
+    { allowed: false, reason: "scope_mismatch" }
+  );
+  assert.deepEqual(
+    authorize(tutor, { kind: "student", studentId: "student-1", cycleId: "cycle-a", operation: "update" }),
     { allowed: false, reason: "scope_mismatch" }
   );
 });
