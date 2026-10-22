@@ -67,4 +67,6 @@ test("audit logs are read-only for admins and unimplemented resource kinds are d
   assert.deepEqual(authorize({ ...admin, roles: [{ role: "tutor", cycleId: "cycle-a" }] }, { kind: "audit", operation: "read" }), { allowed: false, reason: "operation_restricted" });
   assert.deepEqual(authorize(activeStudent, { kind: "document", operation: "export" }), { allowed: false, reason: "no_matching_role" });
   assert.deepEqual(authorize(admin, { kind: "student", studentId: "student-1", operation: "delete" }), { allowed: false, reason: "operation_restricted" });
+  assert.deepEqual(authorize(admin, { kind: "document", operation: "read" }), { allowed: false, reason: "no_matching_role" });
+  assert.deepEqual(authorize(admin, { kind: "assignment", operation: "read" }), { allowed: false, reason: "no_matching_role" });
 });
