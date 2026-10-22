@@ -73,3 +73,15 @@ test("audit logs are read-only for admins and unimplemented resource kinds are d
   assert.deepEqual(authorize(admin, { kind: "company", operation: "admin" }), { allowed: false, reason: "invalid_context" });
   assert.equal(authorize(admin, { kind: "cycle", cycleId: "cycle-a", operation: "read" }).allowed, true);
 });
+
+test("exports remain denied until a dedicated policy exists, including for admins", () => {
+  const admin: Principal = { accountId: "admin-1", status: "active", roles: [{ role: "admin_fp" }] };
+  assert.deepEqual(
+    authorize(admin, { kind: "student", studentId: "student-1", operation: "export" }),
+    { allowed: false, reason: "operation_restricted" }
+  );
+  assert.deepEqual(
+    authorize(activeStudent, { kind: "student", studentId: "student-1", operation: "export" }),
+    { allowed: false, reason: "scope_mismatch" }
+  );
+});
