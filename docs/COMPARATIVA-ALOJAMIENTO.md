@@ -1,46 +1,40 @@
 # Comparativa de alojamiento para FP Conecta v2
 
-**Estado: evaluación preliminar; no se ha seleccionado proveedor.** Los precios y condiciones cambian. Las cifras indicadas son referencias públicas consultadas el 22 de octubre de 2026, no una oferta contractual ni un coste total garantizado.
+**Decisión actual:** Supabase Free para prototipo y pruebas exclusivamente con datos ficticios. **No es una selección ni autorización para producción.** La evaluación institucional de producción sigue pendiente.
 
-## Resumen ejecutivo
+Los precios y condiciones cambian; revisar siempre las páginas oficiales antes de decidir.
 
-| Opción | Ventajas | Costes y mantenimiento | Identidad | Riesgos / comprobaciones |
-|---|---|---|---|---|
-| **Supabase gestionado** | PostgreSQL, Auth y almacenamiento en una plataforma; reduce integración inicial. | Plan Pro anunciado desde USD 25/mes; cómputo adicional y exceso de cuotas pueden aumentar el total. La aplicación sigue necesitando pruebas, configuración segura y mantenimiento. | Incluye autenticación gestionada; revisar MFA disponible, recuperación, sesiones y ciclo de vida de cuentas. | Confirmar región del proyecto, DPA, subencargados, transferencias, copias, retención de logs y controles de acceso. RLS y políticas deben diseñarse y probarse; no confiar solo en la UI. |
-| **Render: servicio web + PostgreSQL** | Despliegue desde GitHub, servicios gestionados y base de datos PostgreSQL gestionada. | Workspace Hobby gratuito para pruebas; el plan Pro se anuncia desde USD 25/mes más cómputo. App y base de datos se facturan por separado; el coste depende de instancias, almacenamiento y tráfico. | Se necesita un proveedor de identidad de aplicación por separado; la autenticación OIDC del workspace no equivale a autenticación de usuarios finales. | Confirmar región disponible y contratada, condiciones de tratamiento, controles de red, copias y recuperación. Evitar planes gratuitos para producción. |
-| **Microsoft Azure: App Service + Azure Database for PostgreSQL** | Opciones empresariales, integración con Microsoft Entra y controles de red, identidad y gobierno. | Precio por cómputo, almacenamiento, copias y servicios adicionales; usar calculadora con región y tamaño concretos. Más opciones implican mayor configuración. | Microsoft Entra External ID u otra identidad institucional, sujeto a compatibilidad y licencia. | Requiere diseño de permisos, configuración de red/identidad, evaluación contractual y estimación de costes; no es automáticamente seguro por ser empresarial. |
-| **Proveedor institucional aprobado** | Puede encajar con las políticas y contratos de la administración educativa, y facilitar la gobernanza. | Depende del servicio disponible, soporte, capacidad y acuerdos institucionales. | Preferible reutilizar identidad institucional si está autorizada y soportada. | Confirmar que admite el despliegue, PostgreSQL, copias, monitorización, segregación de entornos y soporte operativo. |
+## Estado de las opciones
 
-## Referencias oficiales consultadas
+| Opción | Papel en FP Conecta | Costes y mantenimiento | Comprobaciones |
+|---|---|---|---|
+| **Supabase Free** | Elegido para prototipo técnico; PostgreSQL y autenticación gestionada en una plataforma. | 0 USD/mes dentro de cuotas y condiciones del plan. Tiene límites, puede pausar proyectos inactivos y no debe tratarse como servicio de producción con garantías operativas. | Crear proyecto manualmente; confirmar región, DPA, subencargados, transferencias, copias, recuperación, límites, MFA y políticas RLS. |
+| **Supabase Pro** | Posible evolución, no aprobado. | La tarifa publicada parte de USD 25/mes; cómputo y otros consumos pueden modificar el coste total. | Estimar coste real, copias, soporte, límites y requisitos contractuales. |
+| **Render: servicio web + PostgreSQL** | Alternativa si se separa el backend del proveedor de base de datos. | App y base de datos se facturan según planes y recursos; el plan gratuito tiene restricciones que lo excluyen como base para producción. | Región, contrato, identidad, copias, recuperación y coste total. |
+| **Microsoft Azure: App Service + Azure Database for PostgreSQL** | Alternativa a evaluar si encaja con gobierno e identidad institucional. | Coste según cómputo, almacenamiento, copias, región y servicios añadidos. | Identidad, red, contratos, soporte, estimación y configuración. |
+| **Proveedor institucional aprobado** | Alternativa prioritaria para consultar con el centro si existe servicio disponible. | Depende de capacidad, soporte y acuerdos vigentes. | Compatibilidad con PostgreSQL, copias, identidad, segregación y responsabilidades operativas. |
 
+## Referencias oficiales
 - Supabase pricing: https://supabase.com/pricing
 - Supabase billing: https://supabase.com/docs/guides/platform/billing-on-supabase
+- Supabase Auth: https://supabase.com/docs/guides/auth
+- Supabase Row Level Security: https://supabase.com/docs/guides/database/postgres/row-level-security
 - Render pricing: https://render.com/pricing
 - Render Postgres: https://render.com/docs/postgresql
-- Render free services (sus limitaciones excluyen producción): https://render.com/docs/free
 - Azure Database for PostgreSQL: https://learn.microsoft.com/en-us/azure/postgresql/configure-maintain/overview-postgres-choose-server-options
 - Azure PostgreSQL pricing: https://azure.microsoft.com/en-us/pricing/details/postgresql/flexible-server/
 
-## Recomendación para el prototipo
+## Límites de la decisión
+- Supabase Free se usa solo para desarrollo y pruebas con datos ficticios.
+- No se ha creado el proyecto ni se han configurado claves o proveedores de identidad.
+- No incluir secretos, contraseñas, tokens ni claves `service_role` en GitHub ni en el frontend.
+- No conectar el frontend directamente a tablas hasta diseñar y probar RLS; la API debe aplicar autorización por rol y ámbito.
+- Antes de producción, el centro y el DPD deben revisar ubicación, contrato/DPA, subencargados, transferencias, conservación, exportación/eliminación, copias, restauración y controles de acceso.
+- No usar un plan gratuito para producción sin una aprobación expresa y una evaluación documentada de los riesgos y las necesidades operativas.
 
-Evaluar **Supabase y Azure** como primeras opciones, sin aprobar todavía ninguna:
-- Supabase reduce el trabajo de integración y puede acelerar un piloto técnico; hay que validar el modelo de permisos, la región, el contrato y los requisitos de identidad.
-- Azure puede ser preferible si el centro ya tiene gobierno, contratos, identidad o soporte institucional Microsoft; su coste y complejidad deben estimarse con una configuración real.
-- Render es una alternativa razonable para prototipos y despliegues simples, pero añade la elección y operación de un proveedor de identidad separado.
-
-No usar la disponibilidad de un plan gratuito como criterio de producción. No subir datos reales hasta que el centro y el DPD hayan revisado y autorizado el proveedor y la configuración.
-
-## Matriz de decisión que debe completar el centro
-
-Puntuar cada opción de 1 (débil) a 5 (fuerte), adjuntando evidencia contractual/técnica. Los pesos son una propuesta y deben aprobarse antes de usar el resultado.
-
-| Criterio | Peso sugerido | Evidencia necesaria |
-|---|---:|---|
-| Privacidad, DPA y transferencias | 25% | Contrato, subencargados, ubicación, transferencias, eliminación y exportación |
-| Seguridad y control de acceso | 25% | MFA, roles, logs, gestión de incidentes, cifrado, red y pruebas |
-| Identidad institucional / cuentas | 15% | OIDC/SAML disponible, recuperación de cuentas, baja de personal |
-| Copias y recuperación | 15% | Retención, RPO/RTO acordados y restauración probada |
-| Coste total | 10% | Presupuesto anual con soporte, cómputo, base de datos, logs, tráfico e impuestos |
-| Mantenimiento y portabilidad | 10% | Actualizaciones, soporte, exportación estándar y plan de salida |
-
-La ponderación no sustituye a los requisitos obligatorios: una opción que no supere privacidad, seguridad o aprobación institucional debe descartarse aunque obtenga una puntuación total alta.
+## Próximos pasos técnicos
+1. El responsable del proyecto crea el proyecto Supabase en su cuenta y comparte únicamente los valores públicos/no secretos necesarios para configurar el entorno.
+2. Añadir variables de entorno localmente, sin subir archivos `.env`.
+3. Revisar y aplicar la migración en el proyecto de prueba.
+4. Diseñar y probar RLS y autorización de API antes de añadir endpoints de datos.
+5. Ejecutar pruebas de integración con datos ficticios y documentar exportación/restauración.
