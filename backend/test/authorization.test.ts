@@ -5,7 +5,7 @@ import { authorize, type Principal, type ResourceScope } from "../dist/authoriza
 const activeStudent: Principal = {
   accountId: "user-1",
   status: "active",
-  roles: [{ role: "student" }],
+  roles: [],
   studentId: "student-1"
 };
 const ownRecord: ResourceScope = {
@@ -60,8 +60,11 @@ test("archived records require tutor scope and a reason; modifications are block
   assert.deepEqual(authorize(tutor, { ...archived, operation: "update", justifiedReason: "Corrección" }), { allowed: false, reason: "archived_record_restricted" });
 });
 
-test("audit logs and unimplemented resource kinds are denied by default", () => {
+test("audit logs are read-only for admins and unimplemented resource kinds are denied by default", () => {
   const admin: Principal = { accountId: "admin-1", status: "active", roles: [{ role: "admin_fp" }] };
+  assert.equal(authorize(admin, { kind: "audit", operation: "read" }).allowed, true);
+  assert.deepEqual(authorize(admin, { kind: "audit", operation: "delete" }), { allowed: false, reason: "operation_restricted" });
   assert.deepEqual(authorize({ ...admin, roles: [{ role: "tutor", cycleId: "cycle-a" }] }, { kind: "audit", operation: "read" }), { allowed: false, reason: "operation_restricted" });
   assert.deepEqual(authorize(activeStudent, { kind: "document", operation: "export" }), { allowed: false, reason: "no_matching_role" });
+  assert.deepEqual(authorize(admin, { kind: "student", studentId: "student-1", operation: "delete" }), { allowed: false, reason: "operation_restricted" });
 });
