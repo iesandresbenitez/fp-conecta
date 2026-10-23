@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import type { Principal } from "./authorization.js";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
 export type ApiConfig = {
@@ -6,6 +7,7 @@ export type ApiConfig = {
   audience?: string | undefined;
   jwksUrl?: string | undefined;
   logLevel?: string | undefined;
+  resolvePrincipal?: ((subject: string) => Promise<Principal | null>) | undefined;
 };
 
 type VerifiedIdentity = {
@@ -20,7 +22,7 @@ export function buildApp(config: ApiConfig = {
   jwksUrl: process.env.AUTH_JWKS_URL,
   logLevel: process.env.LOG_LEVEL ?? "info"
 }) {
-  const { issuer, audience, jwksUrl } = config;
+  const { issuer, audience, jwksUrl, resolvePrincipal } = config;
   const app = Fastify({
     logger: config.logLevel === "silent" ? false : { level: config.logLevel ?? "info" },
     bodyLimit: 1024 * 1024,
