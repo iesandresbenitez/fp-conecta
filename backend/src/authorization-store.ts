@@ -1,9 +1,9 @@
 import type { Principal, AppRole, AccountStatus } from "./authorization.js";
 
 type SupabaseStoreConfig = {
-  url?: string;
-  serviceRoleKey?: string;
-  fetcher?: typeof fetch;
+  url?: string | undefined;
+  serviceRoleKey?: string | undefined;
+  fetcher?: typeof fetch | undefined;
 };
 
 type Row = Record<string, unknown>;
