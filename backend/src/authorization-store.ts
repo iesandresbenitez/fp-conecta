@@ -1,4 +1,4 @@
-import type { Principal, AppRole, AccountStatus } from "./authorization.js";
+import type { Principal, AccountStatus } from "./authorization.js";
 
 type SupabaseStoreConfig = {
   url?: string | undefined;
@@ -32,6 +32,7 @@ export function createSupabasePrincipalResolver(config: SupabaseStoreConfig = {
   const baseUrl = config.url?.replace(/\/+$/, "");
   const key = config.serviceRoleKey;
   if (!baseUrl || !key) return undefined;
+  const serviceKey: string = key;
 
   let parsed: URL;
   try {
@@ -49,8 +50,8 @@ export function createSupabasePrincipalResolver(config: SupabaseStoreConfig = {
     const response = await fetcher(url, {
       method: "GET",
       headers: {
-        apikey: key,
-        authorization: `Bearer ${key}`,
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
         accept: "application/json"
       },
       signal: AbortSignal.timeout(5000)
