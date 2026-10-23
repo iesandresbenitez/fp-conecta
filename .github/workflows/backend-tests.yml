@@ -1,0 +1,28 @@
+name: Backend tests
+
+on:
+  pull_request:
+    branches: ["main", "feat/**"]
+  push:
+    branches: ["main", "feat/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build and run tests
+        run: npm test
