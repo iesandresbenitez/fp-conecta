@@ -66,6 +66,12 @@ export function buildApp(config: ApiConfig = {
         reason: "identity_provider_not_configured"
       });
     }
+    if (!resolvePrincipal) {
+      return reply.code(503).send({
+        status: "not_ready",
+        reason: "authorization_store_not_configured"
+      });
+    }
     return { status: "ready" };
   });
 
@@ -74,17 +80,34 @@ export function buildApp(config: ApiConfig = {
       return reply.code(503).send({ error: "identity_provider_not_configured" });
     }
 
+    let identity: VerifiedIdentity | null;
     try {
-      const identity = await verifyBearer(request.headers.authorization);
-      if (!identity) return reply.code(401).send({ error: "unauthorized" });
-
-      // Do not expose raw identity claims to the browser. Role/scope lookup and
-      // authorization are intentionally not implemented yet; no business data
-      // endpoints should be added until that layer exists.
-      return { authenticated: true, subject: identity.subject };
+      identity = await verifyBearer(request.headers.authorization);
     } catch {
       return reply.code(401).send({ error: "unauthorized" });
     }
+    if (!identity) return reply.code(401).send({ error: "unauthorized" });
+
+    // A valid JWT proves identity, not current account status or permissions.
+    // Require a trusted server-side resolver before declaring the user active.
+    if (!resolvePrincipal) {
+      return reply.code(503).send({ error: "authorization_store_not_configured" });
+    }
+
+    let principal: Principal | null;
+    try {
+      principal = await resolvePrincipal(identity.subject);
+    } catch (error) {
+      request.log.error({ error, requestId: request.id }, "Authorization lookup failed");
+      return reply.code(503).send({ error: "authorization_lookup_unavailable" });
+    }
+
+    if (!principal || principal.status !== "active") {
+      return reply.code(403).send({ error: "account_not_active_or_not_linked" });
+    }
+
+    // Never expose raw identity claims or authorization metadata to the browser.
+    return { authenticated: true, subject: identity.subject };
   });
 
   app.setErrorHandler((error, request, reply) => {
