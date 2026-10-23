@@ -27,7 +27,7 @@ test("readiness and identity endpoint fail closed when identity provider is not 
   assert.deepEqual(identity.json(), { error: "identity_provider_not_configured" });
 });
 
-test("configured identity provider reports readiness but rejects missing or malformed bearer tokens", async (t) => {
+test("configured identity provider stays unready until trusted authorization lookup exists", async (t) => {
   const app = buildApp({
     issuer: "https://identity.example.test/",
     audience: "fp-conecta-test",
@@ -37,8 +37,11 @@ test("configured identity provider reports readiness but rejects missing or malf
   t.after(async () => app.close());
 
   const readiness = await app.inject({ method: "GET", url: "/health/ready" });
-  assert.equal(readiness.statusCode, 200);
-  assert.deepEqual(readiness.json(), { status: "ready" });
+  assert.equal(readiness.statusCode, 503);
+  assert.deepEqual(readiness.json(), {
+    status: "not_ready",
+    reason: "authorization_store_not_configured"
+  });
 
   const missing = await app.inject({ method: "GET", url: "/api/v1/me" });
   assert.equal(missing.statusCode, 401);
